@@ -8,6 +8,6 @@ public class BootSceneInstaller : MonoInstaller
     public override void InstallBindings()
     {
         Container.Bind<MySceneLoader>().AsSingle().NonLazy();
-        Container.Bind<SceneLoaderWrapper>().AsSingle().NonLazy();
+        Container.BindInterfacesAndSelfTo<SceneLoaderWrapper>().AsSingle().NonLazy();
     }
 }

@@ -21,54 +21,43 @@ MonoBehaviour:
       Num: 0
     ClearSaves: 0
     Screencast: 0
-  GameSetings:
-    RunningControlSensetivity: 1000
-    ShootingRangeAngleDeg: 120
-    ShootingCameraSens: 10000
-    ShellInitialSpeed: 20
-    TankStartSpeed: 4
-    TankSpeedUpgrade: 4
-    TankSpeedGain: 3
-    TankReloadTime: 5
-    LevelsToOpenTank: 6
-    FlagMultiplierGrades:
-    - 1.5
-    - 2
-    - 3
-    - 4
-    - 5
+  GameSettings:
+    TacticalCameraSettings:
+      FollowOffsetMinZoom: {x: 0, y: 2, z: -5}
+      FollowOffsetMaxZoom: {x: 0, y: 50, z: -15}
+      CameraMoveModFromZoomCurve:
+        serializedVersion: 2
+        m_Curve:
+        - serializedVersion: 3
+          time: 0
+          value: 0.1
+          inSlope: 0.9
+          outSlope: 0.9
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0
+          outWeight: 0.33333334
+        - serializedVersion: 3
+          time: 1
+          value: 1
+          inSlope: 0.9
+          outSlope: 0.9
+          tangentMode: 34
+          weightedMode: 0
+          inWeight: 0.33333334
+          outWeight: 0
+        m_PreInfinity: 2
+        m_PostInfinity: 2
+        m_RotationOrder: 4
+    PawnMoveControllerSettings:
+      PawnPositioningSize: 2
+    PawnSettings:
+      CheckEnemiesAroundCD: 0.2
+      EnemiesDetectionRadius: 10
+      AttackRadius: 1.5
+      AttackCD: 2
+      AttackDamage: 10
+      MaxHealth: 100
   Prefabs:
-    StraightSplinePrefab: {fileID: -7443045116921832612, guid: 2ba0a9b7173ced2438f1fb685b4a747f, type: 3}
-    TurnLeftSplinePrefab:
-    - {fileID: 1364831022890240558, guid: 69fbe80df148a6a478b9bfdcd6ee6245, type: 3}
-    - {fileID: 6506593607339226322, guid: da6511e31e1bae044a6ee59e5518b897, type: 3}
-    - {fileID: 8464178890038276447, guid: d6ff4813420f56548bde3c9ee81804a7, type: 3}
-    ConusSplinePrefab: {fileID: 2000181330342227736, guid: 59fe6f7a8a303a244889fc7acb555cba, type: 3}
-    ShootingChunkPrefab: {fileID: 3111808180867036148, guid: aaaa012848323834ea94d319a7506fe0, type: 3}
-    ObstacleChunkPrefab: {fileID: 7416205861043524583, guid: 758623cb2b0947f47a143ade9450c929, type: 3}
-    FlagChunkPrefab: {fileID: 7118265902216311871, guid: e962ea8e10c2a6543bc20bb7fe992463, type: 3}
-    WaterBridgeChunkPrefab: {fileID: 7651442672214793627, guid: b24dbf9f2a5d7ca43bdf336d3061169c, type: 3}
-    ConusPair: {fileID: 4329501911690485150, guid: 76518350ad6ce544f8980dd7865f6e0c, type: 3}
-    FlagPair: {fileID: 1808413132425551204, guid: f5a5d36ec1eaad443a7072bb19938eba, type: 3}
-    ObstaclesPair: {fileID: 3634642076888791569, guid: b96a8aa0f46e2e34bb0d2050ac34587e, type: 3}
-    TankShellPrefab: {fileID: 3482933066157697542, guid: 5d7f3735e871a214597b74653a2bfc53, type: 3}
-    StaticTarget: {fileID: 49499920268356765, guid: ff75910064c50a442b79048aa7d93a42, type: 3}
-    MovingTarget: {fileID: 4208857080240498233, guid: a028766813e3b9247b8396757e00391a, type: 3}
-    FlyingTarget: {fileID: 6088689124493762698, guid: 681f51519169dfa4aa385a3a47b42c52, type: 3}
-    BezierPoint: {fileID: 0}
-    WaterSquare: {fileID: 0}
-    BridgeSquare: {fileID: 0}
-    DesertGroundChunks: []
-    GreenGroundChunks: []
-    WaterChunk: {fileID: 0}
-    Levels:
-    - {fileID: 5888289096396996474, guid: fe1436d893456c642868c0f96078fa54, type: 3}
-    - {fileID: 3798847471270613815, guid: 5c7877aaa2e878b43ba092d9772f445a, type: 3}
-    - {fileID: 4573171792391777697, guid: 8244d624d516e624094e5b9b36fff11b, type: 3}
-    - {fileID: 1911166369982749095, guid: 1e4b36724d3c3b94693e8b6c4cf70462, type: 3}
-    - {fileID: 4627933483603715386, guid: 3a75aaad9dcb0ee4cac04e1683942391, type: 3}
-    TankPrefabs:
-    - {fileID: 11400000, guid: e6736ad19fa9e5f4e9c1d0b3eb59326e, type: 2}
-    - {fileID: 11400000, guid: e743a1555d783c944aa5a8eea3c4c72e, type: 2}
-    - {fileID: 11400000, guid: 64d2a762bd5c1894faf9cba07b961027, type: 2}
-    MoneyPackPrefab: {fileID: 1015375146056604643, guid: f882c37c50c74824086f48e3fd8a7ca3, type: 3}
+    AllyPawn: {fileID: 1710802983513499511, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
+    EnemyPawn: {fileID: 448108256388372086, guid: 5de20ceecd7ed784a9e3508869605865, type: 3}

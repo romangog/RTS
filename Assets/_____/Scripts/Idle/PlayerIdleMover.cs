@@ -21,7 +21,6 @@ public class PlayerIdleMover : MonoBehaviour
     [Inject]
     private void Construct(JoystickController joystickConstroller)
     {
-        Debug.Log("Construck player");
         _joystickConstroller = joystickConstroller;
     }
 

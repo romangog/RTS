@@ -90,4 +90,11 @@ public static class Extentions
         Vector2 globalClamped = clamped.Relative2Global(parent);
         return globalClamped;
     }
+
+    public static bool IsBetweenPoints(this Vector3 pos, Vector3 p1, Vector3 p2)
+    {
+        bool IsInsideX = pos.x > Mathf.Min(p1.x, p2.x) && pos.x < Mathf.Max(p1.x, p2.x);
+        bool IsInsideY = pos.y > Mathf.Min(p1.y, p2.y) && pos.y < Mathf.Max(p1.y, p2.y);
+        return IsInsideX && IsInsideY;
+    }
 }

@@ -5,16 +5,13 @@ using Zenject;
 
 public class CamerasController : MonoBehaviour
 {
-    [SerializeField] private List<VirtualCameraController> _camerasSet;
+    public VirtualCameraController TacticalControlCamera => _tacticalControlCamera;
+
+    [SerializeField] private VirtualCameraController _tacticalControlCamera;
 
     public VirtualCameraController CurrentCamera => _currentCamera;
 
     private VirtualCameraController _currentCamera;
-
-    public void ChooseCamera(int i)
-    {
-        ChooseCamera(_camerasSet[i]);
-    }
 
     public void ChooseCamera(VirtualCameraController camera)
     {

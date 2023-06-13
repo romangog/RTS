@@ -63,5 +63,4 @@ public class MySceneLoader
         }
         _loadingScreenView.Hide();
     }
-
 }

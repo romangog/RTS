@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using Zenject;
 
-public class SceneLoaderWrapper
+public class SceneLoaderWrapper : IInitializable
 {
     public static bool SkipStartScreen;
 
@@ -14,6 +14,11 @@ public class SceneLoaderWrapper
     public SceneLoaderWrapper(MySceneLoader sceneLoader)
     {
         _sceneLoader = sceneLoader;
+    }
+
+    public void Initialize()
+    {
+        LoadLevel(1);
     }
 
     internal void LoadLevel(int level)

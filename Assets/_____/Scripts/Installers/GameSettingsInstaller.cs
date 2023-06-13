@@ -10,8 +10,9 @@ public class GameSettingsInstaller : ScriptableObjectInstaller<GameSettingsInsta
     public GameModSettings GameMod;
 
     [HideLabel]
-    [TabGroup("Game Settings")]
-    public GameSettings GameSetings;
+    [TabGroup("GameSettings")]
+    public GameSettings GameSettings;
+    
 
     [HideLabel]
     [TabGroup("Prefabs")]
@@ -20,7 +21,7 @@ public class GameSettingsInstaller : ScriptableObjectInstaller<GameSettingsInsta
     public override void InstallBindings()
     {
         Container.BindInstance(GameMod).AsSingle().NonLazy();
-        Container.BindInstance(GameSetings).AsSingle().NonLazy();
+        Container.BindInstance(GameSettings).AsSingle().NonLazy();
         Container.BindInstance(Prefabs).AsSingle().NonLazy();
     }
 }

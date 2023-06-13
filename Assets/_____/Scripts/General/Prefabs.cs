@@ -7,4 +7,6 @@ using UnityEngine;
 [Serializable]
 public class Prefabs 
 {
+    public PawnView AllyPawn;
+    public PawnView EnemyPawn;
 }

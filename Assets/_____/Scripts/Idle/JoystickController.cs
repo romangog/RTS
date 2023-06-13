@@ -19,7 +19,6 @@ public class JoystickController:MonoBehaviour, IInitializable
     [Inject]
     private void Construct(MainCamera mainCamera)
     {
-        Debug.Log("Construct joystick controller");
         _mainCamera = mainCamera;
     }
 
