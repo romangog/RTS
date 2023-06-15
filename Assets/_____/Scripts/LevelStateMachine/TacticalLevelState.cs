@@ -2,7 +2,6 @@
 
 public class TacticalLevelState : LevelState
 {
-    private readonly PawnTacticalControl _pawnControl;
     private readonly PawnTacticalControlFacade.InterStateData _pawnControlData;
     private readonly LevelPawnsData _levelData;
     private readonly PawnTacticalControl _pawnTacticalControl;
@@ -13,7 +12,6 @@ public class TacticalLevelState : LevelState
 
     public TacticalLevelState(LevelStateMachine.ServicesPack pack)
     {
-        _pawnControl = pack.PawnTacticalControl;
         _pawnControlData = pack.PawnTacticalControlData;
         _levelData = pack.LevelPawnsData;
         _pawnTacticalControl = pack.PawnTacticalControl;

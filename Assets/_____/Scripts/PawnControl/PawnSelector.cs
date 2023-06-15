@@ -1,8 +1,5 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Zenject;
 
 public class PawnSelector
 {
@@ -40,11 +37,7 @@ public class PawnSelector
         {
             SwitchSelectMode();
             _secondPointOnScreen = Input.mousePosition;
-            if (_IsClick)
-            {
-
-            }
-            else
+            if (!_IsClick)
             {
                 SelectPawnsInRect();
             }
@@ -130,7 +123,6 @@ public class PawnSelector
 
     public void StopSelection()
     {
-
         if (_IsClick)
         {
             if (_preSelectedPawn != null)
@@ -169,11 +161,4 @@ public class PawnSelector
             pawn.SetPreSelected(false);
         }
     }
-}
-
-public class LevelPawnsData
-{
-    public List<PawnController> PlayerPawns;
-    public List<PawnController> EnemyPawns;
-    public Action PawnsListChangedEvent;
 }

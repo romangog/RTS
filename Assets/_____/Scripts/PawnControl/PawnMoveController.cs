@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PawnMoveController
@@ -63,7 +62,6 @@ public class PawnMoveController
         {
             Vector3 middlePosition = GetLevelPointFromScreenPos(Input.mousePosition);
 
-            // IsAttackingCommand
             PawnController closestEnemy = null;
             if (_levelPawnsData.EnemyPawns.Count != 0)
             {
@@ -90,7 +88,6 @@ public class PawnMoveController
             {
                 PawnTacticalControl.EventBus.AttackEvent?.Invoke(closestEnemy);
             }
-
         }
         else
         {
@@ -205,9 +202,7 @@ public class PawnMoveController
         }
         _pawnMarkersPool.ForwardArrow.transform.position = _firstPoint + rowLine / 2f - columnDirection * 1.5f;
         _pawnMarkersPool.ForwardArrow.transform.forward = -columnDirection;
-
     }
-
     private void SwitchRelativeMode()
     {
         bool IsRelativeNow = _positionsDifference < 1f;
@@ -228,21 +223,6 @@ public class PawnMoveController
         _IsRelative = IsRelativeNow;
     }
 
-    public void Enable()
-    {
-    }
-
-    public void Disable()
-    {
-
-    }
-
-    [Serializable]
-    public class Settings
-    {
-        public float PawnPositioningSize;
-    }
-
     internal void DropPlacement()
     {
         if (!_IsRelative)
@@ -254,5 +234,11 @@ public class PawnMoveController
             }
         }
         _IsHolding = false;
+    }
+
+    [Serializable]
+    public class Settings
+    {
+        public float PawnPositioningSize;
     }
 }
