@@ -132,7 +132,7 @@ public class PawnMoveController
             if (i == 0)
                 minDist = dist;
 
-            if (dist < minDist && dist < 1f)
+            if (dist <= minDist && dist < 1f)
             {
                 minDist = dist;
                 closestEnemyPawn = _levelPawnsData.EnemyPawns[i];

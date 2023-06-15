@@ -386,9 +386,6 @@ MonoBehaviour:
   _healParticles: {fileID: 2321437904351224596}
   _heavyAttackParticles: {fileID: 6047268866879270262}
   _attackParticles: {fileID: 7599460602379746717}
-  DebugField: 
-  Debug: 0
-  ApproachingEnemies: 0
 --- !u!195 &2672635534749806819
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -981,6 +978,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: HealParticles
       objectReference: {fileID: 0}
+    - target: {fileID: 9032994463912288526, guid: 6ce0f759da5a66446bb738efdb3df1b0, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 150aee38b5d848b42b75593618992bb7, type: 2}
+    - target: {fileID: 9032994463912321250, guid: 6ce0f759da5a66446bb738efdb3df1b0, type: 3}
+      propertyPath: m_Materials.Array.data[0]
+      value: 
+      objectReference: {fileID: 2100000, guid: 150aee38b5d848b42b75593618992bb7, type: 2}
     - target: {fileID: 9032994463912348520, guid: 6ce0f759da5a66446bb738efdb3df1b0, type: 3}
       propertyPath: playOnAwake
       value: 0
