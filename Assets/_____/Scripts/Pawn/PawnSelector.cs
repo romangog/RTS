@@ -24,7 +24,7 @@ public class PawnSelector
     public PawnSelector(
         SelectionRectView selectionRectView,
         LevelPawnsData levelPawnsData,
-        MainCamera mainCamera, 
+        MainCamera mainCamera,
         PawnTacticalControlFacade.InterStateData pawnTacticalControlData)
     {
         _levelPawnsData = levelPawnsData;
@@ -69,12 +69,18 @@ public class PawnSelector
             if (i == 0)
                 minDist = dist;
 
-            if (dist < minDist && dist < 1f)
+            if (dist <= minDist && dist < 1f)
             {
                 minDist = dist;
                 closestPawn = _levelPawnsData.PlayerPawns[i];
             }
         }
+        if (closestPawn == null)
+        {
+            Debug.Log("NULL");
+        }
+        else
+            Debug.Log("Closest pawn: " + closestPawn.Position);
 
         if (_preSelectedPawn != closestPawn)
         {

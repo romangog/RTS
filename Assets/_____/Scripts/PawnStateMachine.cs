@@ -64,12 +64,14 @@ public class PawnFacade
     public PawnFacade(
         List<PawnController> enemies,
         PawnController.Settings settings,
-        PawnView view)
+        PawnView view,
+        PawnInterStateData interStateData)
     {
         Enemies = enemies;
         Settings = settings;
         View = view;
-        EnemiesLocator = new EnemiesLocator(enemies, settings, view);
+        InterStateData = interStateData;
+        EnemiesLocator = new EnemiesLocator(enemies, settings, view, interStateData);
     }
 
     public List<PawnController> Enemies { get; }
@@ -77,8 +79,7 @@ public class PawnFacade
     public PawnView View { get; }
     public EnemiesLocator EnemiesLocator { get; }
 
-    public PawnController TargetEnemyPawn { get; set; }
-    public Vector3 TargetPosition { get; set; }
+    public PawnInterStateData InterStateData { get; }
 
     public void Update()
     {
@@ -86,11 +87,21 @@ public class PawnFacade
     }
 }
 
+public class PawnInterStateData
+{
+    public Action<PawnController> SpottedEnemyEvent;
+    public PawnController TargetEnemyPawn { get; set; }
+    public Vector3 TargetPosition { get; set; }
+    public PawnStateType PawnStateType { get; set; }
+    public int ApproachingEnemies{ get; set; }
+}
+
 public class EnemiesLocator
 {
     private readonly List<PawnController> _enemies;
     private readonly PawnController.Settings _pawnSettings;
     private readonly PawnView _view;
+    private readonly PawnInterStateData _interStateData;
     private float _detectionCD;
 
     public Action<PawnController> FoundClosestEnemyEvent;
@@ -98,27 +109,41 @@ public class EnemiesLocator
     public EnemiesLocator(
         List<PawnController> enemies,
         PawnController.Settings pawnSettings,
-        PawnView view)
+        PawnView view,
+        PawnInterStateData interStateData)
     {
         _enemies = enemies;
         _pawnSettings = pawnSettings;
         _view = view;
+        _interStateData = interStateData;
     }
 
     public PawnController GetClosestEnemyPawn()
     {
-        if (_view.Debug) Debug.Log("Enemeis: " + _enemies.Count);
         if (_enemies.Count == 0) return null;
-        float minDistance = Vector3.Distance(_enemies[0].Position, _view.transform.position);
-        PawnController closestEnemyPawn = _enemies[0];
-        if (minDistance > _pawnSettings.EnemiesDetectionRadius) closestEnemyPawn = null;
-        foreach (var enemy in _enemies)
+        float maxPrefertence = 0f;
+        PawnController closestEnemyPawn = null;
+        for (int i = 0; i < _enemies.Count; i++)
         {
+            var enemy = _enemies[i];
             float distance = Vector3.Distance(enemy.Position, _view.transform.position);
-            if (distance > _pawnSettings.EnemiesDetectionRadius) continue;
-            if (distance < minDistance)
+            if (distance >= _pawnSettings.EnemiesDetectionRadius) continue;
+            float approachingEnemiesDivider = 
+                (_interStateData.TargetEnemyPawn == enemy)
+                ? (enemy.InterStateData.ApproachingEnemies)
+                : (enemy.InterStateData.ApproachingEnemies + 1);
+
+            float preference = (1f - distance / _pawnSettings.EnemiesDetectionRadius) / approachingEnemiesDivider;
+            if (_view.Debug)
             {
-                minDistance = distance;
+                Debug.Log("======");
+                Debug.Log("ApproachingEnemies = " + enemy.InterStateData.ApproachingEnemies);
+                Debug.Log("divider = " + approachingEnemiesDivider);
+                Debug.Log("preference = " + preference);
+            }
+            if (preference > maxPrefertence)
+            {
+                maxPrefertence = preference;
                 closestEnemyPawn = enemy;
             }
         }
@@ -132,7 +157,6 @@ public class EnemiesLocator
         {
             _detectionCD = _pawnSettings.CheckEnemiesAroundCD;
             PawnController closestPawn = GetClosestEnemyPawn();
-            if (_view.Debug) Debug.Log("CheckedFor closest target: " + closestPawn);
             if (closestPawn != null)
                 FoundClosestEnemyEvent?.Invoke(closestPawn);
         }
@@ -142,41 +166,47 @@ public class IdleState : PawnState
 {
     public override PawnStateType Type => PawnStateType.Idle;
 
-    private readonly PawnFacade _facade;
-    private readonly List<PawnController> _enemies;
-    private readonly PawnController.Settings _settings;
+    private readonly PawnInterStateData _interStateData;
     private readonly PawnView _view;
+    private readonly EnemiesLocator _enemiesLocator;
     private float _checkEnemiesAroundCd;
 
     public IdleState(PawnFacade facade)
     {
-        _facade = facade;
-        _enemies = facade.Enemies;
-        _settings = facade.Settings;
+        _interStateData = facade.InterStateData;
         _view = facade.View;
-        _facade.EnemiesLocator.FoundClosestEnemyEvent += OnFoundClosestEnemy;
+        _enemiesLocator = facade.EnemiesLocator;
     }
 
-    private void OnFoundClosestEnemy(PawnController closestEnemy)
-    {
-        _facade.TargetEnemyPawn = closestEnemy;
-        CalledForStateChangeEvent?.Invoke(PawnStateType.MovingAttack);
-    }
+
 
     public override void Start()
     {
+        _enemiesLocator.FoundClosestEnemyEvent += OnFoundClosestEnemy;
         _view.DebugField = "Idle";
         _view.Agent.destination = _view.transform.position;
+        _interStateData.PawnStateType = this.Type;
     }
+    private void OnFoundClosestEnemy(PawnController closestEnemy)
+    {
+        if(_interStateData.TargetEnemyPawn != null)
+        {
+            _interStateData.TargetEnemyPawn.InterStateData.ApproachingEnemies--;
+        }
+        closestEnemy.InterStateData.ApproachingEnemies++;
+        _interStateData.TargetEnemyPawn = closestEnemy;
 
+        _interStateData.SpottedEnemyEvent?.Invoke(closestEnemy);
+        CalledForStateChangeEvent?.Invoke(PawnStateType.MovingAttack);
+    }
     public override void Stop()
     {
-
+        _enemiesLocator.FoundClosestEnemyEvent -= OnFoundClosestEnemy;
     }
 
     public override void Update()
     {
-        _facade.Update();
+        _enemiesLocator.Update();
     }
 
 
@@ -184,49 +214,57 @@ public class IdleState : PawnState
 
 public class MovingAttackState : PawnState
 {
-    private readonly PawnFacade _facade;
     private readonly PawnView _view;
     private readonly PawnController.Settings _settings;
+    private readonly EnemiesLocator _enemiesLocator;
+    private readonly PawnInterStateData _interStateData;
 
     public override PawnStateType Type => PawnStateType.MovingAttack;
 
     public MovingAttackState(PawnFacade facade)
     {
-        _facade = facade;
-        _view = _facade.View;
-        _facade.EnemiesLocator.FoundClosestEnemyEvent += OnFoundClosestEnemy;
+        _interStateData = facade.InterStateData;
+        _view = facade.View;
         _settings = facade.Settings;
+        _enemiesLocator = facade.EnemiesLocator;
     }
 
     private void OnFoundClosestEnemy(PawnController closestEnemy)
     {
-        _facade.TargetEnemyPawn = closestEnemy;
+        if (_interStateData.TargetEnemyPawn != null)
+        {
+            _interStateData.TargetEnemyPawn.InterStateData.ApproachingEnemies--;
+        }
+        closestEnemy.InterStateData.ApproachingEnemies++;
+        _interStateData.TargetEnemyPawn = closestEnemy;
     }
 
     public override void Start()
     {
+        _enemiesLocator.FoundClosestEnemyEvent += OnFoundClosestEnemy;
         _view.DebugField = "MovingAttack";
+        _interStateData.PawnStateType = this.Type;
     }
+
 
     public override void Stop()
     {
+        _enemiesLocator.FoundClosestEnemyEvent -= OnFoundClosestEnemy;
 
     }
 
     public override void Update()
     {
-        _facade.Update();
-
-        if (_facade.TargetEnemyPawn.IsDead)
+        if (_interStateData.TargetEnemyPawn.IsDead)
         {
             CalledForStateChangeEvent(PawnStateType.Idle);
             return;
         }
-
-        _view.Agent.destination = _facade.TargetEnemyPawn.Position;
+        _enemiesLocator.Update();
+        _view.Agent.destination = _interStateData.TargetEnemyPawn.Position;
 
         // UpdateClosestEnemy
-        float distanceToEnemy = Vector3.Distance(_view.transform.position, _facade.TargetEnemyPawn.Position);
+        float distanceToEnemy = Vector3.Distance(_view.transform.position, _interStateData.TargetEnemyPawn.Position);
         if (distanceToEnemy < _settings.AttackRadius)
         {
             CalledForStateChangeEvent(PawnStateType.Attacking);
@@ -236,7 +274,7 @@ public class MovingAttackState : PawnState
 
 public class AttackingState : PawnState
 {
-    private readonly PawnFacade _facade;
+    private readonly PawnInterStateData _interStateData;
     private readonly PawnController.Settings _settings;
     private readonly PawnView _view;
 
@@ -246,7 +284,7 @@ public class AttackingState : PawnState
 
     public AttackingState(PawnFacade facade)
     {
-        _facade = facade;
+        _interStateData = facade.InterStateData;
         _settings = facade.Settings;
         _view = facade.View;
     }
@@ -254,21 +292,26 @@ public class AttackingState : PawnState
     public override void Start()
     {
         _view.DebugField = "Attack";
+        _interStateData.PawnStateType = this.Type;
+        _view.Agent.destination = _view.transform.position;
+        _view.Agent.enabled = false;
+        _view.Obstacle.enabled = true;
     }
 
     public override void Stop()
     {
-
+        _view.Agent.enabled = true;
+        _view.Obstacle.enabled = false;
     }
 
     public override void Update()
     {
-        if (_facade.TargetEnemyPawn.IsDead)
+        if (_interStateData.TargetEnemyPawn.IsDead)
         {
             CalledForStateChangeEvent(PawnStateType.Idle);
             return;
         }
-
+        _view.transform.rotation = Quaternion.LookRotation(_interStateData.TargetEnemyPawn.Position - _view.transform.position);
         _attackCD = Mathf.MoveTowards(_attackCD, 0f, Time.deltaTime);
         if (_attackCD == 0f)
         {
@@ -280,12 +323,14 @@ public class AttackingState : PawnState
 
     private void AttackClosestEnemy()
     {
-        _facade.TargetEnemyPawn.RecieveDamage(_settings.AttackDamage);
+        _interStateData.TargetEnemyPawn.RecieveDamage(_settings.AttackDamage);
+        _view.AttackParticles.Play();
     }
 }
 
 public class MovingState : PawnState
 {
+    private readonly PawnInterStateData _interStateData;
     private readonly PawnView _view;
     private readonly PawnFacade _facade;
 
@@ -293,14 +338,15 @@ public class MovingState : PawnState
 
     public MovingState(PawnFacade facade)
     {
+        _interStateData = facade.InterStateData;
         _view = facade.View;
-        _facade = facade;
     }
 
     public override void Start()
     {
-        _view.Agent.destination = _facade.TargetPosition;
+        _view.Agent.destination = _interStateData.TargetPosition;
         _view.DebugField = "Moving";
+        _interStateData.PawnStateType = this.Type;
     }
 
     public override void Stop()
@@ -310,7 +356,7 @@ public class MovingState : PawnState
 
     public override void Update()
     {
-        float distanceToDestinationPoint = Vector3.Distance(_view.transform.position, _facade.TargetPosition);
+        float distanceToDestinationPoint = Vector3.Distance(_view.transform.position, _interStateData.TargetPosition);
         if (distanceToDestinationPoint < 0.1f)
         {
             CalledForStateChangeEvent(PawnStateType.Idle);

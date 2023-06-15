@@ -15,6 +15,10 @@ PrefabInstance:
       propertyPath: m_Color.g
       value: 0.119365565
       objectReference: {fileID: 0}
+    - target: {fileID: 363448592228092679, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1024710444287200834, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
       propertyPath: m_Color.a
       value: 0.5019608
@@ -22,6 +26,10 @@ PrefabInstance:
     - target: {fileID: 1024710444287200834, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
       propertyPath: m_Color.g
       value: 0.11764706
+      objectReference: {fileID: 0}
+    - target: {fileID: 2415951753625182562, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2672635534689880771, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
       propertyPath: m_Materials.Array.data[0]
@@ -74,6 +82,10 @@ PrefabInstance:
     - target: {fileID: 2672635534749806829, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
       propertyPath: m_Name
       value: EnemyPawnView Variant
+      objectReference: {fileID: 0}
+    - target: {fileID: 5709455121347015076, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}

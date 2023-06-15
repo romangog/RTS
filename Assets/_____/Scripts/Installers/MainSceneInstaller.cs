@@ -11,6 +11,6 @@ public class MainSceneInstaller : MonoInstaller
         Container.BindInterfacesAndSelfTo<SimpleTouchInput>().AsSingle().NonLazy();
         Container.Bind<EventBus>().AsSingle().NonLazy();
         Container.BindInterfacesAndSelfTo<TacticalCameraController>().AsSingle().NonLazy();
-        Container.BindFactory<Vector3,bool,List<PawnController>, PawnController, PawnController.Factory>().AsSingle().NonLazy();
+        Container.BindFactory<Vector3,bool,Transform, List<PawnController>, PawnController, PawnController.Factory>().AsSingle().NonLazy();
     }
 }

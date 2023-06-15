@@ -54,10 +54,21 @@ MonoBehaviour:
     PawnSettings:
       CheckEnemiesAroundCD: 0.2
       EnemiesDetectionRadius: 10
-      AttackRadius: 1.5
-      AttackCD: 2
-      AttackDamage: 10
+      AttackRadius: 2
+      AttackCD: 3
+      AttackDamage: 20
       MaxHealth: 100
+    AbilitiesSettings:
+      HealthAbility:
+        HealValue: 30
+        CoolDown: 30
+      HeavyAttackAbility:
+        DamageValue: 50
+        CoolDown: 30
+    LevelSettings:
+      ConquestZoneRadius: 5
+    EnemyAiSettings:
+      AlertRange: 15
   Prefabs:
     AllyPawn: {fileID: 1710802983513499511, guid: 181bfa0fc42983b4c943ef59384a50a1, type: 3}
     EnemyPawn: {fileID: 448108256388372086, guid: 5de20ceecd7ed784a9e3508869605865, type: 3}

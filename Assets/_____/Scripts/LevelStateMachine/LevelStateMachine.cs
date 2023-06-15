@@ -1,8 +1,5 @@
 using DG.Tweening;
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using Zenject;
 
 public enum LevelStateType
@@ -18,7 +15,6 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
     {
         public ServicesPack(
             LevelPawnsData levelPawnsData,
-            CamerasController camerasController,
             GameSettings gameSettings,
             PawnController.Factory pawnFactory,
             PawnSelector pawnSelector,
@@ -26,10 +22,14 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
             SpawnPointAlly[] spawnPointsAlly,
             SpawnPointEnemy[] spawnPointsEnemy,
             PawnTacticalControl pawnTacticalControl,
-            PawnTacticalControlFacade.InterStateData pawnTacticalControlData)
+            PawnTacticalControlFacade.InterStateData pawnTacticalControlData,
+            EnemyAI enemyAi,
+            ConquestZone conquestZone,
+            UI ui,
+            SceneLoaderWrapper sceneLoader,
+            LevelView levelView)
         {
             LevelPawnsData = levelPawnsData;
-            CamerasController = camerasController;
             GameSettings = gameSettings;
             PawnFactory = pawnFactory;
             PawnSelector = pawnSelector;
@@ -38,10 +38,14 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
             SpawnPointsEnemy = spawnPointsEnemy;
             PawnTacticalControl = pawnTacticalControl;
             PawnTacticalControlData = pawnTacticalControlData;
+            EnemyAi = enemyAi;
+            ConquestZone = conquestZone;
+            Ui = ui;
+            SceneLoader = sceneLoader;
+            LevelView = levelView;
         }
 
         public LevelPawnsData LevelPawnsData { get; }
-        public CamerasController CamerasController { get; }
         public GameSettings GameSettings { get; }
         public PawnController.Factory PawnFactory { get; }
         public PawnSelector PawnSelector { get; }
@@ -50,33 +54,31 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
         public SpawnPointEnemy[] SpawnPointsEnemy { get; }
         public PawnTacticalControl PawnTacticalControl { get; }
         public PawnTacticalControlFacade.InterStateData PawnTacticalControlData { get; }
+        public EnemyAI EnemyAi { get; }
+        public ConquestZone ConquestZone { get; }
+        public UI Ui { get; }
+        public SceneLoaderWrapper SceneLoader { get; }
+        public LevelView LevelView { get; }
     }
 
     private LevelState _currentState;
 
     private LevelState[] _states;
 
-    // Можно было бы биндить интерфейсы по принципу DI, но так проще
     public LevelStateMachine(
-        EventBus eventBus,
-        CamerasController camerasController,
         GameSettings gameSettings,
-        SimpleTouchInput simpleTouchInput,
-        BlackScreen blackScreen,
-        SLS.Snapshot snapshot,
-        Prefabs prefabs,
         SceneLoaderWrapper sceneLoader,
-        Money money,
         PawnController.Factory pawnFactory,
         UI ui,
         PawnTargetPositionsMarkersPool pawnPositionsMarkerPool,
         SpawnPointAlly[] spawnPointsAlly,
         SpawnPointEnemy[] spawnPointsEnemy,
-        MainCamera mainCamera
+        MainCamera mainCamera,
+        ConquerZoneView conquestZoneView,
+        LevelView levelView
         )
     {
         LevelPawnsData levelPawnsData = new LevelPawnsData();
-
         PawnTacticalControlFacade.InterStateData pawnTacticalControlData = new PawnTacticalControlFacade.InterStateData();
 
         PawnSelector pawnSelector = new PawnSelector(
@@ -101,10 +103,15 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
 
         PawnTacticalControl pawnTacticalControl = new PawnTacticalControl(pawnTacticalControlFacade);
 
+        EnemyAI enemyAi = new EnemyAI(levelPawnsData, gameSettings);
+
+        ConquestZone conquestZone = new ConquestZone(
+            conquestZoneView,
+            levelPawnsData,
+            gameSettings);
 
         ServicesPack pack = new ServicesPack(
             levelPawnsData,
-            camerasController,
             gameSettings,
             pawnFactory,
             pawnSelector,
@@ -112,15 +119,22 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
             spawnPointsAlly,
             spawnPointsEnemy, 
             pawnTacticalControl,
-            pawnTacticalControlData);
+            pawnTacticalControlData,
+            enemyAi,
+            conquestZone,
+            ui,
+            sceneLoader,
+            levelView);
 
         StartLevelState startLevelState = new StartLevelState(pack);
         TacticalLevelState tacticalLevelState = new TacticalLevelState(pack);
+        FinishLevelState finishLevelState = new FinishLevelState(pack);
 
         _states = new LevelState[]
         {
             startLevelState,
             tacticalLevelState,
+            finishLevelState
         };
 
         foreach (var state in _states)
@@ -153,188 +167,5 @@ public class LevelStateMachine : ITickable, IInitializable, IFixedTickable
     public void Tick()
     {
         _currentState?.Update();
-    }
-}
-
-
-
-public abstract class LevelState
-{
-    public Action<LevelStateType> CalledForStateChangeEvent;
-    public abstract LevelStateType Type { get; }
-    public abstract void Start();
-    public abstract void Update();
-    public abstract void FixedUpdate();
-    public abstract void Stop();
-}
-
-public class StartLevelState : LevelState
-{
-    private readonly LevelPawnsData _levelPawnsData;
-    private readonly LevelSettings _levelSettings;
-    private readonly PawnController.Factory _pawnFactory;
-    private readonly SpawnPointAlly[] _allySpawnPoints;
-    private readonly SpawnPointEnemy[] _enemySpawnPoints;
-
-    public override LevelStateType Type => LevelStateType.Start;
-
-    public StartLevelState(LevelStateMachine.ServicesPack pack)
-    {
-        _levelPawnsData = pack.LevelPawnsData;
-        _levelSettings = pack.GameSettings.LevelSettings;
-        _pawnFactory = pack.PawnFactory;
-        _allySpawnPoints = pack.SpawnPointsAlly;
-        _enemySpawnPoints = pack.SpawnPointsEnemy;
-    }
-
-    public override void Start()
-    {
-        _levelPawnsData.PlayerPawns = new List<PawnController>(_allySpawnPoints.Length);
-        _levelPawnsData.EnemyPawns = new List<PawnController>(_enemySpawnPoints.Length);
-        // Spawn player units
-        for (int i = 0; i < _allySpawnPoints.Length; i++)
-        {
-            _levelPawnsData.PlayerPawns.Add(_pawnFactory.Create(_allySpawnPoints[i].transform.position, true, _levelPawnsData.EnemyPawns));
-        }
-
-        // Spawn enemyUnits
-        for (int i = 0; i < _enemySpawnPoints.Length; i++)
-        {
-            _levelPawnsData.EnemyPawns.Add(_pawnFactory.Create(_enemySpawnPoints[i].transform.position, false, _levelPawnsData.PlayerPawns));
-        }
-        CalledForStateChangeEvent?.Invoke(LevelStateType.Tactical);
-    }
-
-    public override void Stop()
-    {
-    }
-
-    public override void Update()
-    {
-
-    }
-
-    public override void FixedUpdate()
-    {
-
-    }
-}
-
-
-public class TacticalLevelState : LevelState
-{
-    private readonly PawnTacticalControl _pawnControl;
-    private readonly PawnTacticalControlFacade.InterStateData _pawnControlData;
-    private readonly LevelPawnsData _levelData;
-    private readonly PawnTacticalControl _pawnTacticalControl;
-
-    public override LevelStateType Type => LevelStateType.Tactical;
-
-    public TacticalLevelState(LevelStateMachine.ServicesPack pack)
-    {
-        _pawnControl = pack.PawnTacticalControl;
-        _pawnControlData = pack.PawnTacticalControlData;
-        _levelData = pack.LevelPawnsData;
-        _pawnTacticalControl = pack.PawnTacticalControl;
-
-
-    }
-    public override void Start()
-    {
-        _pawnTacticalControl.ChangeState(TacticalControlStateType.Idle);
-        foreach (var playerPawn in _levelData.PlayerPawns)
-        {
-            playerPawn.DiedEvent += OnPlayerPawnDied;
-        }
-
-        foreach (var enemyPawn in _levelData.EnemyPawns)
-        {
-            enemyPawn.DiedEvent += OnEnemyPawnDied;
-        }
-
-        PawnTacticalControl.EventBus.MovePositionsPlacedEvent += OnPawnsMoveSet;
-        PawnTacticalControl.EventBus.MovePositionsRelativeEvent += OnPawnsMoveRelative;
-        PawnTacticalControl.EventBus.AttackEvent += OnPawnsAttack;
-    }
-
-    private void OnPawnsAttack(PawnController enemy)
-    {
-        for (int i = 0; i < _pawnControlData.SelectedPawns.Count; i++)
-        {
-            _pawnControlData.SelectedPawns[i].CommandAttack(enemy);
-        }
-    }
-
-    private void OnPawnsMoveRelative(Vector3 relativePosition)
-    {
-        Vector3 middlePoint = Vector3.zero;
-        for (int i = 0; i < _pawnControlData.SelectedPawns.Count; i++)
-        {
-            middlePoint += _pawnControlData.SelectedPawns[i].Position;
-        }
-        middlePoint /= (float)_pawnControlData.SelectedPawns.Count;
-
-        for (int i = 0; i < _pawnControlData.SelectedPawns.Count; i++)
-        {
-            Vector3 distanceFromMiddlePoint = _pawnControlData.SelectedPawns[i].Position - middlePoint;
-            _pawnControlData.SelectedPawns[i].CommandMove(relativePosition + distanceFromMiddlePoint);
-        }
-    }
-
-    private void OnPawnsMoveSet(Vector3[] pawnMovePositions)
-    {
-        for (int i = 0; i < pawnMovePositions.Length; i++)
-        {
-            _pawnControlData.SelectedPawns[i].CommandMove(pawnMovePositions[i]);
-        }
-    }
-
-    private void OnPlayerPawnDied(PawnController pawn)
-    {
-        _levelData.PlayerPawns.Remove(pawn);
-    }
-
-    private void OnEnemyPawnDied(PawnController pawn)
-    {
-        _levelData.EnemyPawns.Remove(pawn);
-    }
-
-    public override void Stop()
-    {
-        PawnTacticalControl.EventBus.MovePositionsPlacedEvent -= OnPawnsMoveSet;
-        PawnTacticalControl.EventBus.MovePositionsRelativeEvent -= OnPawnsMoveRelative;
-        PawnTacticalControl.EventBus.AttackEvent -= OnPawnsAttack;
-
-        foreach (var playerPawn in _levelData.PlayerPawns)
-        {
-            playerPawn.DiedEvent -= OnPlayerPawnDied;
-        }
-        foreach (var enemyPawn in _levelData.EnemyPawns)
-        {
-            enemyPawn.DiedEvent -= OnEnemyPawnDied;
-        }
-    }
-
-    public override void Update()
-    {
-        _pawnTacticalControl.Update();
-        foreach (var playerPawn in _levelData.PlayerPawns)
-        {
-            playerPawn.Tick();
-        }
-        foreach (var enemyPawn in _levelData.EnemyPawns)
-        {
-            enemyPawn.Tick();
-        }
-
-        if(Input.GetMouseButton(2))
-        {
-
-        }
-    }
-
-    public override void FixedUpdate()
-    {
-
     }
 }
