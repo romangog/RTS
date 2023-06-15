@@ -76,8 +76,7 @@ public class PawnController
         var ability = _abilities[typeof(T)];
         if (ability.IsAvilable)
         {
-            if (_view.Debug)
-                Debug.Log("Cast " + ability);
+
             ability.Cast();
         }
     }
@@ -119,7 +118,6 @@ public class PawnController
 
         _view.DisplayBillboard.SetHealAbilityCdPercent(_abilities[typeof(HealAbility)].CooldownPercent);
         _view.DisplayBillboard.SetHeavyAttackAbilityCdPercent(_abilities[typeof(HeavyAttackAbility)].CooldownPercent);
-        _view.ApproachingEnemies = _interStateData.ApproachingEnemies;
     }
 
     internal void RecieveDamage(float attackDamage)

@@ -23,7 +23,4 @@ public class PawnView : MonoBehaviour
     [SerializeField] private ParticleSystem _healParticles;
     [SerializeField] private ParticleSystem _heavyAttackParticles;
     [SerializeField] private ParticleSystem _attackParticles;
-    public string DebugField;
-    public bool Debug;
-    public int ApproachingEnemies;
 }

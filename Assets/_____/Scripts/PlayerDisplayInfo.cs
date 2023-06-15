@@ -7,7 +7,6 @@ public class PlayerDisplayInfo : MonoBehaviour
 {
     private Transform _cameraTransform;
 
-    [SerializeField] private GameObject _healthbarRoot;
     [SerializeField] private Image _healthbar;
     [SerializeField] private Image _healAbilityProgress;
     [SerializeField] private Image _heavyAttackAbilityProgress;
@@ -41,4 +40,3 @@ public class PlayerDisplayInfo : MonoBehaviour
         _heavyAttackAbilityProgress.fillAmount = percent;
     }
 }
-

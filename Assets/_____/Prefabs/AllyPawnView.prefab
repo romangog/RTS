@@ -189,10 +189,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 2415951753625182562}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 94e4aea828bb1f942a8b751db96264f6, type: 3}
+  m_Script: {fileID: 11500000, guid: 7ea1cea442e04bb438c7721634d7bd0e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _healthbarRoot: {fileID: 7328294097252412806}
   _healthbar: {fileID: 7208924636943263830}
   _healAbilityProgress: {fileID: 607966958236578743}
   _heavyAttackAbilityProgress: {fileID: 5725584714804250353}

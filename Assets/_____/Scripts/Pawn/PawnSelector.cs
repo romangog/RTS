@@ -75,12 +75,6 @@ public class PawnSelector
                 closestPawn = _levelPawnsData.PlayerPawns[i];
             }
         }
-        if (closestPawn == null)
-        {
-            Debug.Log("NULL");
-        }
-        else
-            Debug.Log("Closest pawn: " + closestPawn.Position);
 
         if (_preSelectedPawn != closestPawn)
         {

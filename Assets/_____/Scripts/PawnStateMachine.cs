@@ -93,7 +93,7 @@ public class PawnInterStateData
     public PawnController TargetEnemyPawn { get; set; }
     public Vector3 TargetPosition { get; set; }
     public PawnStateType PawnStateType { get; set; }
-    public int ApproachingEnemies{ get; set; }
+    public int ApproachingEnemies { get; set; }
 }
 
 public class EnemiesLocator
@@ -128,19 +128,13 @@ public class EnemiesLocator
             var enemy = _enemies[i];
             float distance = Vector3.Distance(enemy.Position, _view.transform.position);
             if (distance >= _pawnSettings.EnemiesDetectionRadius) continue;
-            float approachingEnemiesDivider = 
+            float approachingEnemiesDivider =
                 (_interStateData.TargetEnemyPawn == enemy)
                 ? (enemy.InterStateData.ApproachingEnemies)
                 : (enemy.InterStateData.ApproachingEnemies + 1);
 
             float preference = (1f - distance / _pawnSettings.EnemiesDetectionRadius) / approachingEnemiesDivider;
-            if (_view.Debug)
-            {
-                Debug.Log("======");
-                Debug.Log("ApproachingEnemies = " + enemy.InterStateData.ApproachingEnemies);
-                Debug.Log("divider = " + approachingEnemiesDivider);
-                Debug.Log("preference = " + preference);
-            }
+
             if (preference > maxPrefertence)
             {
                 maxPrefertence = preference;
@@ -183,13 +177,12 @@ public class IdleState : PawnState
     public override void Start()
     {
         _enemiesLocator.FoundClosestEnemyEvent += OnFoundClosestEnemy;
-        _view.DebugField = "Idle";
         _view.Agent.destination = _view.transform.position;
         _interStateData.PawnStateType = this.Type;
     }
     private void OnFoundClosestEnemy(PawnController closestEnemy)
     {
-        if(_interStateData.TargetEnemyPawn != null)
+        if (_interStateData.TargetEnemyPawn != null)
         {
             _interStateData.TargetEnemyPawn.InterStateData.ApproachingEnemies--;
         }
@@ -242,7 +235,6 @@ public class MovingAttackState : PawnState
     public override void Start()
     {
         _enemiesLocator.FoundClosestEnemyEvent += OnFoundClosestEnemy;
-        _view.DebugField = "MovingAttack";
         _interStateData.PawnStateType = this.Type;
     }
 
@@ -291,7 +283,6 @@ public class AttackingState : PawnState
 
     public override void Start()
     {
-        _view.DebugField = "Attack";
         _interStateData.PawnStateType = this.Type;
         _view.Agent.destination = _view.transform.position;
         _view.Agent.enabled = false;
@@ -311,6 +302,14 @@ public class AttackingState : PawnState
             CalledForStateChangeEvent(PawnStateType.Idle);
             return;
         }
+
+        float distanceToEnemy = Vector3.Distance(_view.transform.position, _interStateData.TargetEnemyPawn.Position);
+        if (distanceToEnemy >= _settings.AttackRadius)
+        {
+            CalledForStateChangeEvent(PawnStateType.MovingAttack);
+            return;
+        }
+
         _view.transform.rotation = Quaternion.LookRotation(_interStateData.TargetEnemyPawn.Position - _view.transform.position);
         _attackCD = Mathf.MoveTowards(_attackCD, 0f, Time.deltaTime);
         if (_attackCD == 0f)
@@ -345,7 +344,6 @@ public class MovingState : PawnState
     public override void Start()
     {
         _view.Agent.destination = _interStateData.TargetPosition;
-        _view.DebugField = "Moving";
         _interStateData.PawnStateType = this.Type;
     }
 
